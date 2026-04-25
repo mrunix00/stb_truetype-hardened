@@ -10,3 +10,7 @@
 # FUZZ-2026-001 generated artifacts
 /tests/FUZZ-2026-001/truncated_tabledir.ttf
 /tests/FUZZ-2026-001/test_web_2026_001
+
+# FUZZ-2026-002 generated artifacts
+/tests/FUZZ-2026-002/truncated_consistent_tabledir.ttf
+/tests/FUZZ-2026-002/test_web_2026_002

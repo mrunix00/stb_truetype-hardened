@@ -21,3 +21,11 @@
 - **Fix Description**: Added strict SFNT offset-table sanity checks in `stbtt__find_table`: reject `numTables == 0`, recompute expected `searchRange`, `entrySelector`, and `rangeShift` from `numTables`, and return failure when header values are inconsistent. Only then iterate table records.
 - **Changed Code**: `stb_truetype.h` — updated `stbtt__find_table` to parse and validate offset-table fields before scanning. Updated malformed-font generators in `tests/WEB-2026-001/generate_malformed_font.py` and `tests/WEB-2026-002/generate_malicious_font.py` to emit spec-consistent offset-table search fields.
 - **Regression Risk**: Low to medium. Valid SFNT fonts should already satisfy these invariants. The change may reject malformed but previously tolerated fonts with inconsistent directory-search metadata.
+
+## FUZZ-2026-002
+
+- **Summary**: Added an early font-signature gate in initialization to reject non-font payloads before table scans.
+- **Root Cause**: `stbtt_InitFont_internal` proceeded to table discovery via repeated `stbtt__find_table` calls without first checking whether `data + fontstart` actually begins with a recognized SFNT/OTF signature. An attacker could provide truncated non-font bytes with internally consistent search fields and still drive table-directory reads out of bounds.
+- **Fix Description**: Added a minimal early check in `stbtt_InitFont_internal` using `stbtt__isfont(data + fontstart)`. If the signature is not a recognized font container/header, initialization now fails immediately (`return 0`) before any table lookups.
+- **Changed Code**: `stb_truetype.h` — inserted `stbtt__isfont` guard near the start of `stbtt_InitFont_internal`.
+- **Regression Risk**: Low. This only tightens initialization for obviously invalid/non-font payloads and preserves behavior for valid TrueType/OpenType signatures.
