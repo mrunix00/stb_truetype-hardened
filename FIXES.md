@@ -29,3 +29,11 @@
 - **Fix Description**: Added a minimal early check in `stbtt_InitFont_internal` using `stbtt__isfont(data + fontstart)`. If the signature is not a recognized font container/header, initialization now fails immediately (`return 0`) before any table lookups.
 - **Changed Code**: `stb_truetype.h` — inserted `stbtt__isfont` guard near the start of `stbtt_InitFont_internal`.
 - **Regression Risk**: Low. This only tightens initialization for obviously invalid/non-font payloads and preserves behavior for valid TrueType/OpenType signatures.
+
+## FUZZ-2026-003
+
+- **Summary**: Added a minimum SFNT table-count sanity gate before any table-directory scanning.
+- **Root Cause**: `stbtt_InitFont_internal` accepted any signature-valid SFNT header and then invoked `stbtt__find_table`, which iterates based on untrusted `numTables`. Extremely short/truncated payloads with `numTables` set below the minimum needed for supported fonts could still reach the directory scanner and trigger out-of-bounds reads.
+- **Fix Description**: In `stbtt_InitFont_internal`, after the existing signature check, read `numTables` from the offset table and reject headers with fewer than 4 tables before any `stbtt__find_table` calls.
+- **Changed Code**: `stb_truetype.h` — introduced local `sfnt_num_tables` in `stbtt_InitFont_internal` and added `if (sfnt_num_tables < 4) return 0;` prior to table lookups.
+- **Regression Risk**: Low. Supported initialization paths already require at least `cmap`, `head`, `hhea`, and `hmtx`, so valid fonts should not be affected.

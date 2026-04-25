@@ -14,3 +14,7 @@
 # FUZZ-2026-002 generated artifacts
 /tests/FUZZ-2026-002/truncated_consistent_tabledir.ttf
 /tests/FUZZ-2026-002/test_web_2026_002
+
+# FUZZ-2026-003 generated artifacts
+/tests/FUZZ-2026-003/truncated_valid_sfnt_tabledir.ttf
+/tests/FUZZ-2026-003/test_web_2026_003

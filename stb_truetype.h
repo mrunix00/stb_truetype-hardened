@@ -1409,11 +1409,17 @@ static int stbtt_InitFont_internal(stbtt_fontinfo *info, unsigned char *data, in
    stbtt_uint32 cmap, t;
    stbtt_int32 i,numTables;
 
+   stbtt_uint32 sfnt_num_tables;
+
    info->data = data;
    info->fontstart = fontstart;
    info->cff = stbtt__new_buf(NULL, 0);
 
    if (!stbtt__isfont(data + fontstart))
+      return 0;
+
+   sfnt_num_tables = ttUSHORT(data + fontstart + 4);
+   if (sfnt_num_tables < 4)
       return 0;
 
    cmap = stbtt__find_table(data, fontstart, "cmap");       // required
