@@ -37,3 +37,11 @@
 - **Fix Description**: In `stbtt_InitFont_internal`, after the existing signature check, read `numTables` from the offset table and reject headers with fewer than 4 tables before any `stbtt__find_table` calls.
 - **Changed Code**: `stb_truetype.h` — introduced local `sfnt_num_tables` in `stbtt_InitFont_internal` and added `if (sfnt_num_tables < 4) return 0;` prior to table lookups.
 - **Regression Risk**: Low. Supported initialization paths already require at least `cmap`, `head`, `hhea`, and `hmtx`, so valid fonts should not be affected.
+
+## WEB-2026-003
+
+- **Summary**: Hardened TrueType contour-start handling to avoid one-past-end lookahead when an off-curve contour starts at the last point.
+- **Root Cause**: In `stbtt__GetGlyphShapeTT`, when `next_move == i` and the start point was off-curve, code unconditionally read `vertices[off+i+1]`. For malformed glyphs where `i == n-1`, this became `vertices[off+n]` (one past the allocated vertex buffer).
+- **Fix Description**: Added a bounds guard to only enter the off-curve start lookahead path when `(i+1) < n`. Otherwise, the code falls back to the non-lookahead start path and avoids out-of-bounds access.
+- **Changed Code**: `stb_truetype.h` — changed `if (start_off)` to `if (start_off && (i+1) < n)` in `stbtt__GetGlyphShapeTT`.
+- **Regression Risk**: Low. The change is localized to malformed edge cases at contour starts and preserves existing behavior for valid glyph point sequences where a next point exists.
