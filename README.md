@@ -1,0 +1,1 @@
+# Hardened stb_truetype
