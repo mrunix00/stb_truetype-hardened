@@ -4,3 +4,9 @@
 /tests/*/test_web_*
 /tests/*/core*
 /tests/*/vgcore.*
+/tests/*/__pycache__/
+/tests/*/*.pyc
+
+# FUZZ-2026-001 generated artifacts
+/tests/FUZZ-2026-001/truncated_tabledir.ttf
+/tests/FUZZ-2026-001/test_web_2026_001

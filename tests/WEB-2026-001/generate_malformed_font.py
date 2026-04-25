@@ -69,7 +69,21 @@ tables = [
 ]
 
 num_tables = len(tables)
-offset_table = u32(0x00010000) + u16(num_tables) + u16(0) + u16(0) + u16(0)
+max_pow2 = 1
+entry_selector = 0
+while (max_pow2 << 1) <= num_tables:
+    max_pow2 <<= 1
+    entry_selector += 1
+search_range = max_pow2 * 16
+range_shift = (num_tables * 16) - search_range
+
+offset_table = (
+    u32(0x00010000) +
+    u16(num_tables) +
+    u16(search_range) +
+    u16(entry_selector) +
+    u16(range_shift)
+)
 directory_len = 16 * num_tables
 current_offset = len(offset_table) + directory_len
 records = []

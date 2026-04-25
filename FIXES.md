@@ -13,3 +13,11 @@
 - **Fix Description**: Introduced an internal recursion depth parameter for the TrueType glyph-shape routine and enforced a conservative maximum depth (`STBTT_MAX_GLYPH_RECURSION_DEPTH = 32`). Recursive component resolution now calls the depth-tracked internal function (`depth + 1`) instead of the public wrapper, and returns failure (`0` vertices) when the depth limit is reached.
 - **Changed Code**: `stb_truetype.h` — updated `stbtt__GetGlyphShapeTT` signature to include recursion depth, added depth-limit check, changed compound glyph recursive call to internal depth-tracked call, and updated `stbtt_GetGlyphShape` to seed depth `0` for TrueType paths.
 - **Regression Risk**: Low. The change is localized to malformed/cyclic deep compound-glyph cases and preserves behavior for normal fonts with typical component depth.
+
+## FUZZ-2026-001
+
+- **Summary**: Hardened SFNT table-directory parsing by validating offset-table search parameters before iterating table records.
+- **Root Cause**: `stbtt__find_table` trusted `numTables` and immediately iterated `data + tabledir + 16*i` without validating basic offset-table consistency (`searchRange`, `entrySelector`, `rangeShift`). Truncated fuzz inputs could set attacker-controlled header bytes and drive reads past the provided buffer.
+- **Fix Description**: Added strict SFNT offset-table sanity checks in `stbtt__find_table`: reject `numTables == 0`, recompute expected `searchRange`, `entrySelector`, and `rangeShift` from `numTables`, and return failure when header values are inconsistent. Only then iterate table records.
+- **Changed Code**: `stb_truetype.h` — updated `stbtt__find_table` to parse and validate offset-table fields before scanning. Updated malformed-font generators in `tests/WEB-2026-001/generate_malformed_font.py` and `tests/WEB-2026-002/generate_malicious_font.py` to emit spec-consistent offset-table search fields.
+- **Regression Risk**: Low to medium. Valid SFNT fonts should already satisfy these invariants. The change may reject malformed but previously tolerated fonts with inconsistent directory-search metadata.

@@ -1307,11 +1307,33 @@ static int stbtt__isfont(stbtt_uint8 *font)
 // @OPTIMIZE: binary search
 static stbtt_uint32 stbtt__find_table(stbtt_uint8 *data, stbtt_uint32 fontstart, const char *tag)
 {
-   stbtt_int32 num_tables = ttUSHORT(data+fontstart+4);
    stbtt_uint32 tabledir = fontstart + 12;
+   stbtt_uint32 num_tables = ttUSHORT(data+fontstart+4);
+   stbtt_uint32 search_range = ttUSHORT(data+fontstart+6);
+   stbtt_uint32 entry_selector = ttUSHORT(data+fontstart+8);
+   stbtt_uint32 range_shift = ttUSHORT(data+fontstart+10);
+   stbtt_uint32 max_pow2, expected_search_range, expected_entry_selector = 0;
    stbtt_int32 i;
-   for (i=0; i < num_tables; ++i) {
-      stbtt_uint32 loc = tabledir + 16*i;
+
+   if (num_tables == 0)
+      return 0;
+
+   max_pow2 = 1;
+   while ((max_pow2 << 1) <= num_tables) {
+      max_pow2 <<= 1;
+      ++expected_entry_selector;
+   }
+
+   expected_search_range = max_pow2 * 16;
+   if (search_range != expected_search_range)
+      return 0;
+   if (entry_selector != expected_entry_selector)
+      return 0;
+   if (range_shift != num_tables * 16 - search_range)
+      return 0;
+
+   for (i=0; i < (stbtt_int32) num_tables; ++i) {
+      stbtt_uint32 loc = tabledir + 16*(stbtt_uint32) i;
       if (stbtt_tag(data+loc+0, tag))
          return ttULONG(data+loc+8);
    }
