@@ -1,0 +1,6 @@
+# Generated test artifacts
+/tests/*/*.ttf
+/tests/*/*.otf
+/tests/*/test_web_*
+/tests/*/core*
+/tests/*/vgcore.*

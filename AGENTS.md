@@ -198,12 +198,30 @@ Each fix MUST include:
 - Remove bug from `BUGS.md`
 - Ensure test remains (regression test)
 
+## Test Execution
+
+- Per-bug execution: run `tests/<BUG-ID>/run.sh`
+- Aggregate execution: run `tests/run-all.sh` from repository root
+- Any final validation claim MUST be supported by passing `tests/run-all.sh`
+
 ## Testing Requirements
 
 - Use Unity framework
 - Each bug has isolated test directory
 - Tests MUST be reproducible
 - Tests MUST not depend on external resources
+- `tests/run-all.sh` MUST discover and execute all `tests/<BUG-ID>/run.sh` scripts
+
+## Generated Artifact Hygiene
+
+When adding a new test under `tests/<BUG-ID>/`, the agent MUST identify generated artifacts and add them to `.gitignore` in the same change.
+
+At minimum, ignore:
+- Generated fonts/samples (e.g. `*.ttf`, `*.otf` if generated)
+- Built test binaries (e.g. `test_web_*`)
+- Crash dumps/core files (e.g. `core*`, `vgcore.*`)
+
+Do not rely on manual cleanup alone; generated outputs must be ignored via `.gitignore`.
 
 ## Safety Guidelines
 
